@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WordPress HTML 埋め込みジェネレーター</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #111;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    /* タブ */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+
+    .tab-btn {
+      padding: 8px 20px;
+      border: 2px solid #ddd;
+      border-radius: 999px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #555;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+
+    .tab-btn.active {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #fff;
+    }
+
+    /* カード */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 28px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section h2 {
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section p.desc {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    /* フォーム部品 */
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: border-color 0.15s;
+      outline: none;
+      background: #fafafa;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus,
+    select:focus, textarea:focus {
+      border-color: #4f46e5;
+      background: #fff;
+    }
+
+    .form-row { margin-bottom: 16px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 16px; height: 16px; cursor: pointer;
+    }
+
+    .checkbox-row label { margin: 0; cursor: pointer; }
+
+    /* 生成ボタン */
+    .generate-btn {
+      width: 100%;
+      padding: 12px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 8px;
+    }
+
+    .generate-btn:hover { background: #4338ca; }
+
+    /* 出力エリア */
+    .output-area {
+      margin-top: 24px;
+      display: none;
+    }
+
+    .output-area.show { display: block; }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .output-header span {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .copy-btn {
+      padding: 6px 14px;
+      background: #10b981;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .copy-btn:hover { background: #059669; }
+    .copy-btn.copied { background: #6b7280; }
+
+    .output-code {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      font-family: "Fira Code", "Cascadia Code", monospace;
+      overflow-x: auto;
+      white-space: pre;
+      word-break: normal;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 24px 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>WordPress HTML 埋め込みジェネレーター</h1>
+<p class="subtitle">埋め込みたい種類を選んで情報を入力するだけ</p>
+
+<!-- タブ -->
+<div class="tabs" id="tabs">
+  <button class="tab-btn active" data-target="youtube">▶ YouTube</button>
+  <!-- 追加埋め込みはここに button を追加 -->
+</div>
+
+<div class="card">
+
+  <!-- ===================== YouTube ===================== -->
+  <div class="section active" id="youtube">
+    <h2>▶ YouTube 埋め込み</h2>
+    <p class="desc">YouTube の URL または動画 ID を入力してください</p>
+
+    <div class="form-row">
+      <label>YouTube URL または動画 ID</label>
+      <input type="text" id="yt-url"
+        placeholder="https://www.youtube.com/watch?v=XXXXX または XXXXX">
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label>アスペクト比</label>
+        <select id="yt-aspect">
+          <option value="56.25">16:9（標準）</option>
+          <option value="75">4:3</option>
+          <option value="42.85">21:9（シネスコ）</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>タイトル（任意）</label>
+        <input type="text" id="yt-title" placeholder="動画タイトル">
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="yt-autoplay">
+      <label for="yt-autoplay">自動再生（autoplay）</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="yt-mute">
+      <label for="yt-mute">ミュート（mute）</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="yt-norelated">
+      <label for="yt-norelated">関連動画を非表示（rel=0）</label>
+    </div>
+
+    <button class="generate-btn" onclick="generateYouTube()">HTML を生成</button>
+
+    <div class="output-area" id="yt-output">
+      <hr class="divider">
+      <div class="output-header">
+        <span>生成された HTML</span>
+        <button class="copy-btn" id="yt-copy-btn" onclick="copyCode('yt-code','yt-copy-btn')">コピー</button>
+      </div>
+      <div class="output-code" id="yt-code"></div>
+    </div>
+  </div>
+  <!-- /YouTube -->
+
+</div><!-- /card -->
+
+<script>
+  /* ─── タブ切替 ─── */
+  document.getElementById('tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+  });
+
+  /* ─── YouTube ─── */
+  function extractYouTubeId(input) {
+    input = input.trim();
+    // 短縮 URL: youtu.be/ID
+    let m = input.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    // 通常 URL: watch?v=ID
+    m = input.match(/[?&]v=([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    // embed URL
+    m = input.match(/embed\/([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    // 11文字の ID そのまま
+    if (/^[A-Za-z0-9_-]{11}$/.test(input)) return input;
+    return null;
+  }
+
+  function generateYouTube() {
+    const raw    = document.getElementById('yt-url').value;
+    const id     = extractYouTubeId(raw);
+    if (!id) { alert('有効な YouTube URL または動画 ID を入力してください'); return; }
+
+    const aspect   = document.getElementById('yt-aspect').value;
+    const title    = document.getElementById('yt-title').value || 'YouTube video player';
+    const autoplay = document.getElementById('yt-autoplay').checked;
+    const mute     = document.getElementById('yt-mute').checked;
+    const norel    = document.getElementById('yt-norelated').checked;
+
+    const params = new URLSearchParams();
+    if (autoplay) params.set('autoplay', '1');
+    if (mute)     params.set('mute', '1');
+    if (norel)    params.set('rel', '0');
+    const query = params.toString() ? '?' + params.toString() : '';
+
+    const src = `https://www.youtube.com/embed/${id}${query}`;
+
+    const html = `<div style="position: relative; padding-bottom: ${aspect}%; height: 0; overflow: hidden; max-width: 100%; background: #000;">
+    <iframe src="${src}"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+            title="${escapeAttr(title)}" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+    </iframe>
+</div>`;
+
+    document.getElementById('yt-code').textContent = html;
+    const out = document.getElementById('yt-output');
+    out.classList.add('show');
+    out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ─── ユーティリティ ─── */
+  function escapeAttr(str) {
+    return str.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function copyCode(codeId, btnId) {
+    const text = document.getElementById(codeId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.textContent = 'コピー済み ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'コピー';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
