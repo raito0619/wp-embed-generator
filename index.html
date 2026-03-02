@@ -239,16 +239,24 @@
     <div class="form-grid">
       <div class="form-row">
         <label>アスペクト比</label>
-        <select id="yt-aspect">
+        <select id="yt-aspect" onchange="onAspectChange()">
           <option value="56.25">16:9（標準）</option>
           <option value="75">4:3</option>
           <option value="42.85">21:9（シネスコ）</option>
+          <option value="177.78">9:16（縦動画・Shorts）</option>
         </select>
       </div>
       <div class="form-row">
         <label>タイトル（任意）</label>
         <input type="text" id="yt-title" placeholder="動画タイトル">
       </div>
+    </div>
+
+    <div class="form-row" id="yt-maxwidth-row" style="display:none;">
+      <label>最大幅（縦動画用）</label>
+      <input type="text" id="yt-maxwidth" value="400px"
+        placeholder="例: 400px、50% など">
+      <p style="font-size:0.75rem;color:#999;margin-top:4px;">幅を制限しないと画面いっぱいに縦長になるため、400px 前後を推奨します</p>
     </div>
 
     <div class="checkbox-row">
@@ -290,6 +298,12 @@
     document.getElementById(btn.dataset.target).classList.add('active');
   });
 
+  /* ─── アスペクト比切替 ─── */
+  function onAspectChange() {
+    const isVertical = document.getElementById('yt-aspect').value === '177.78';
+    document.getElementById('yt-maxwidth-row').style.display = isVertical ? 'block' : 'none';
+  }
+
   /* ─── YouTube ─── */
   function extractYouTubeId(input) {
     input = input.trim();
@@ -312,11 +326,15 @@
     const id     = extractYouTubeId(raw);
     if (!id) { alert('有効な YouTube URL または動画 ID を入力してください'); return; }
 
-    const aspect   = document.getElementById('yt-aspect').value;
-    const title    = document.getElementById('yt-title').value || 'YouTube video player';
-    const autoplay = document.getElementById('yt-autoplay').checked;
-    const mute     = document.getElementById('yt-mute').checked;
-    const norel    = document.getElementById('yt-norelated').checked;
+    const aspect     = document.getElementById('yt-aspect').value;
+    const isVertical = aspect === '177.78';
+    const title      = document.getElementById('yt-title').value || 'YouTube video player';
+    const autoplay   = document.getElementById('yt-autoplay').checked;
+    const mute       = document.getElementById('yt-mute').checked;
+    const norel      = document.getElementById('yt-norelated').checked;
+    const maxWidth   = isVertical
+      ? (document.getElementById('yt-maxwidth').value.trim() || '400px')
+      : null;
 
     const params = new URLSearchParams();
     if (autoplay) params.set('autoplay', '1');
@@ -326,7 +344,18 @@
 
     const src = `https://www.youtube.com/embed/${id}${query}`;
 
-    const html = `<div style="position: relative; padding-bottom: ${aspect}%; height: 0; overflow: hidden; max-width: 100%; background: #000;">
+    const inner = `<div style="position: relative; padding-bottom: ${aspect}%; height: 0; overflow: hidden; background: #000;">
+    <iframe src="${src}"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+            title="${escapeAttr(title)}" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+    </iframe>
+</div>`;
+
+    const html = isVertical
+      ? `<div style="max-width: ${escapeAttr(maxWidth)}; margin: 0 auto;">\n    ${inner.replace(/\n/g, '\n    ')}\n</div>`
+      : `<div style="position: relative; padding-bottom: ${aspect}%; height: 0; overflow: hidden; max-width: 100%; background: #000;">
     <iframe src="${src}"
             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
             title="${escapeAttr(title)}" frameborder="0"
