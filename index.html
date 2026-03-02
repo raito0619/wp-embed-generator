@@ -313,6 +313,9 @@
     // 通常 URL: watch?v=ID
     m = input.match(/[?&]v=([A-Za-z0-9_-]{11})/);
     if (m) return m[1];
+    // Shorts URL: youtube.com/shorts/ID
+    m = input.match(/shorts\/([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
     // embed URL
     m = input.match(/embed\/([A-Za-z0-9_-]{11})/);
     if (m) return m[1];
