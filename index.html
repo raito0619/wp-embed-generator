@@ -220,6 +220,7 @@
 <!-- タブ -->
 <div class="tabs" id="tabs">
   <button class="tab-btn active" data-target="youtube">▶ YouTube</button>
+  <button class="tab-btn" data-target="mp4">🎬 MP4動画</button>
   <!-- 追加埋め込みはここに button を追加 -->
 </div>
 
@@ -284,6 +285,75 @@
     </div>
   </div>
   <!-- /YouTube -->
+
+  <!-- ===================== MP4動画 ===================== -->
+  <div class="section" id="mp4">
+    <h2>🎬 MP4動画 埋め込み</h2>
+    <p class="desc">WordPressメディアライブラリや外部サーバーにある MP4 の URL を入力してください</p>
+
+    <div class="form-row">
+      <label>MP4ファイルの URL <span style="color:#e11d48;">*</span></label>
+      <input type="text" id="mp4-url"
+        placeholder="https://example.com/wp-content/uploads/video.mp4">
+    </div>
+
+    <div class="form-row">
+      <label>サムネイル画像の URL（poster）任意</label>
+      <input type="text" id="mp4-poster"
+        placeholder="https://example.com/thumbnail.jpg">
+      <p style="font-size:0.75rem;color:#999;margin-top:4px;">再生前に表示される画像。省略すると動画の最初のフレームが表示されます</p>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label>アスペクト比</label>
+        <select id="mp4-aspect" onchange="onMp4AspectChange()">
+          <option value="56.25">16:9（標準）</option>
+          <option value="75">4:3</option>
+          <option value="42.85">21:9（シネスコ）</option>
+          <option value="177.78">9:16（縦動画）</option>
+        </select>
+      </div>
+      <div class="form-row" id="mp4-maxwidth-row" style="display:none;">
+        <label>最大幅（縦動画用）</label>
+        <input type="text" id="mp4-maxwidth" value="400px"
+          placeholder="例: 400px、50% など">
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="mp4-controls" checked>
+      <label for="mp4-controls">コントロールを表示（controls）</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="mp4-autoplay">
+      <label for="mp4-autoplay">自動再生（autoplay）※ブラウザの仕様上、ミュートも必要</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="mp4-muted">
+      <label for="mp4-muted">ミュート（muted）</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="mp4-loop">
+      <label for="mp4-loop">ループ再生（loop）</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="mp4-playsinline" checked>
+      <label for="mp4-playsinline">インライン再生（playsinline）※iOSで全画面にならない</label>
+    </div>
+
+    <button class="generate-btn" onclick="generateMp4()">HTML を生成</button>
+
+    <div class="output-area" id="mp4-output">
+      <hr class="divider">
+      <div class="output-header">
+        <span>生成された HTML</span>
+        <button class="copy-btn" id="mp4-copy-btn" onclick="copyCode('mp4-code','mp4-copy-btn')">コピー</button>
+      </div>
+      <div class="output-code" id="mp4-code"></div>
+    </div>
+  </div>
+  <!-- /MP4動画 -->
 
 </div><!-- /card -->
 
@@ -369,6 +439,56 @@
 
     document.getElementById('yt-code').textContent = html;
     const out = document.getElementById('yt-output');
+    out.classList.add('show');
+    out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ─── MP4動画 ─── */
+  function onMp4AspectChange() {
+    const isVertical = document.getElementById('mp4-aspect').value === '177.78';
+    document.getElementById('mp4-maxwidth-row').style.display = isVertical ? 'block' : 'none';
+  }
+
+  function generateMp4() {
+    const url = document.getElementById('mp4-url').value.trim();
+    if (!url) { alert('MP4ファイルの URL を入力してください'); return; }
+
+    const poster      = document.getElementById('mp4-poster').value.trim();
+    const aspect      = document.getElementById('mp4-aspect').value;
+    const isVertical  = aspect === '177.78';
+    const maxWidth    = isVertical
+      ? (document.getElementById('mp4-maxwidth').value.trim() || '400px')
+      : null;
+    const controls    = document.getElementById('mp4-controls').checked;
+    const autoplay    = document.getElementById('mp4-autoplay').checked;
+    const muted       = document.getElementById('mp4-muted').checked;
+    const loop        = document.getElementById('mp4-loop').checked;
+    const playsinline = document.getElementById('mp4-playsinline').checked;
+
+    const attrs = [
+      `style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000;"`,
+      controls    ? 'controls'    : '',
+      autoplay    ? 'autoplay'    : '',
+      muted       ? 'muted'       : '',
+      loop        ? 'loop'        : '',
+      playsinline ? 'playsinline' : '',
+      poster      ? `poster="${escapeAttr(poster)}"` : '',
+    ].filter(Boolean).join('\n            ');
+
+    const inner =
+`<div style="position: relative; padding-bottom: ${aspect}%; height: 0; overflow: hidden;">
+    <video ${attrs}>
+        <source src="${escapeAttr(url)}" type="video/mp4">
+        お使いのブラウザは動画の再生に対応していません。
+    </video>
+</div>`;
+
+    const html = isVertical
+      ? `<div style="max-width: ${escapeAttr(maxWidth)}; margin: 0 auto;">\n    ${inner.replace(/\n/g, '\n    ')}\n</div>`
+      : inner;
+
+    document.getElementById('mp4-code').textContent = html;
+    const out = document.getElementById('mp4-output');
     out.classList.add('show');
     out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
