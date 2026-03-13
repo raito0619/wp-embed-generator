@@ -210,6 +210,104 @@
       border-top: 1px solid #eee;
       margin: 24px 0;
     }
+
+    /* スニペットカード */
+    .snippet-card {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .snippet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #f9fafb;
+      border-bottom: 1.5px solid #e5e7eb;
+    }
+
+    .snippet-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 3px;
+    }
+
+    .snippet-desc {
+      font-size: 0.78rem;
+      color: #666;
+    }
+
+    .snippet-usage {
+      padding: 16px;
+      background: #fff;
+      border-top: 1.5px solid #e5e7eb;
+    }
+
+    .snippet-usage-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .snippet-how-to {
+      font-size: 0.82rem;
+      color: #444;
+      list-style: none;
+      counter-reset: step;
+      padding: 0;
+    }
+
+    .snippet-how-to li {
+      counter-increment: step;
+      margin-bottom: 8px;
+      padding-left: 26px;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .snippet-how-to li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 1px;
+      width: 18px;
+      height: 18px;
+      background: #4f46e5;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .snippet-how-to code {
+      background: #f0f0f8;
+      color: #4f46e5;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: "Fira Code", monospace;
+      font-size: 0.78rem;
+    }
+
+    .snippet-example {
+      margin-top: 12px;
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      font-family: "Fira Code", "Cascadia Code", monospace;
+      overflow-x: auto;
+      white-space: pre;
+    }
   </style>
 </head>
 <body>
@@ -221,6 +319,7 @@
 <div class="tabs" id="tabs">
   <button class="tab-btn active" data-target="youtube">▶ YouTube</button>
   <button class="tab-btn" data-target="mp4">🎬 MP4動画</button>
+  <button class="tab-btn" data-target="css-snippets">🎨 CSSスニペット</button>
   <!-- 追加埋め込みはここに button を追加 -->
 </div>
 
@@ -354,6 +453,43 @@
     </div>
   </div>
   <!-- /MP4動画 -->
+
+  <!-- ===================== CSSスニペット ===================== -->
+  <div class="section" id="css-snippets">
+    <h2>🎨 CSSスニペット</h2>
+    <p class="desc">追加CSSに貼るだけで使えるスタイル集。記事ごとにクラスを付けて使います</p>
+
+    <!-- スニペット1 -->
+    <div class="snippet-card">
+      <div class="snippet-header">
+        <div>
+          <div class="snippet-title">ネストリスト：中抜き丸</div>
+          <div class="snippet-desc">子リストの箇条書きを同じピンク色の中抜き丸に変更する</div>
+        </div>
+        <button class="copy-btn" id="copy-nested" onclick="copyCode('css-nested','copy-nested')">コピー</button>
+      </div>
+      <div class="output-code" id="css-nested">ul.scoped-nested > li::before {
+  background: transparent !important;
+  border: 2px solid #F24BE1 !important;
+  box-sizing: border-box !important;
+}</div>
+      <div class="snippet-usage">
+        <div class="snippet-usage-title">📋 使い方</div>
+        <ol class="snippet-how-to">
+          <li>上の CSS を <strong>外観 → カスタマイズ → 追加CSS</strong> に貼り付けて保存</li>
+          <li>記事のコードエディターで子リストの <code>&lt;ul&gt;</code> を開く</li>
+          <li><code>class="wp-block-list"</code> を <code>class="wp-block-list scoped-nested"</code> に変更して保存</li>
+        </ol>
+        <div class="snippet-example">&lt;ul class="wp-block-list scoped-nested"&gt;
+  &lt;li&gt;サブ項目1&lt;/li&gt;
+  &lt;li&gt;サブ項目2&lt;/li&gt;
+&lt;/ul&gt;</div>
+      </div>
+    </div>
+    <!-- 追加スニペットはここに .snippet-card を追加 -->
+
+  </div>
+  <!-- /CSSスニペット -->
 
 </div><!-- /card -->
 
