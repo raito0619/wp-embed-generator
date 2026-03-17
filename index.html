@@ -585,7 +585,7 @@
       ? `<div style="max-width: ${escapeAttr(maxWidth)}; margin: 0 auto;">\n    ${inner.replace(/\n/g, '\n    ')}\n</div>`
       : inner;
 
-    const figcaption = caption ? `\n<figcaption class="wp-element-caption">${caption}</figcaption>` : '';
+    const figcaption = caption ? `\n<figcaption class="wp-element-caption" style="display:block; font-size:0.9em; color:#555; text-align:center; margin-top:0.5em;">${caption}</figcaption>` : '';
 
     let html;
     if (layout === 'plain') {
