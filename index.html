@@ -775,7 +775,7 @@
 
     const html =
 `<div class="wp-block-group${bgClass}" style="${bgStyle} border-radius:1rem; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:2rem 1rem; margin-block:1rem; gap:1.25rem;">${headingHtml}
-<a href="${escapeAttr(url)}" style="display:inline-flex; font-weight:700; color:#ffffff; background-color:${btnColor}; border-radius:100rem; padding:1.5rem 4rem; text-decoration:none; line-height:1;">${btnText}</a>
+<a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; font-weight:700; color:#ffffff; background-color:${btnColor}; border-radius:100rem; padding:1.5rem 4rem; text-decoration:none; line-height:1;">${btnText}</a>
 </div>`;
 
     document.getElementById('cta-code').textContent = html;
