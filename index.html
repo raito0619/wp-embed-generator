@@ -296,6 +296,29 @@
       font-size: 0.78rem;
     }
 
+    /* カラー入力 */
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .color-row input[type="color"] {
+      width: 40px;
+      height: 38px;
+      padding: 2px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #fafafa;
+      flex-shrink: 0;
+    }
+
+    .color-row input[type="text"] {
+      flex: 1;
+      min-width: 0;
+    }
+
     .snippet-example {
       margin-top: 12px;
       background: #1e1e2e;
@@ -319,6 +342,7 @@
 <div class="tabs" id="tabs">
   <button class="tab-btn active" data-target="youtube">▶ YouTube</button>
   <button class="tab-btn" data-target="mp4">🎬 MP4動画</button>
+  <button class="tab-btn" data-target="cta">🔗 CTAボタン</button>
   <button class="tab-btn" data-target="css-snippets">🎨 CSSスニペット</button>
   <!-- 追加埋め込みはここに button を追加 -->
 </div>
@@ -470,6 +494,73 @@
     </div>
   </div>
   <!-- /MP4動画 -->
+
+  <!-- ===================== CTAボタン ===================== -->
+  <div class="section" id="cta">
+    <h2>🔗 CTAボタン</h2>
+    <p class="desc">外部リンクを目立たせるボタン付きCTAブロックを生成します</p>
+
+    <div class="form-row">
+      <label>見出しテキスト（任意）</label>
+      <input type="text" id="cta-heading" placeholder="例：SUZURIでグッズを販売中！">
+    </div>
+
+    <div class="form-row">
+      <label>ボタンテキスト <span style="color:#e11d48;">*</span></label>
+      <input type="text" id="cta-btn-text" placeholder="例：SUZURIショップを見る">
+    </div>
+
+    <div class="form-row">
+      <label>リンク先 URL <span style="color:#e11d48;">*</span></label>
+      <input type="text" id="cta-url" placeholder="https://suzuri.jp/...">
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label>ボタン色</label>
+        <div class="color-row">
+          <input type="color" id="cta-btn-color" value="#FF4EA6"
+            oninput="syncColor('cta-btn-color','cta-btn-color-text')">
+          <input type="text" id="cta-btn-color-text" value="#FF4EA6"
+            oninput="syncColorText('cta-btn-color-text','cta-btn-color')">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>見出し色</label>
+        <div class="color-row">
+          <input type="color" id="cta-heading-color" value="#00649A"
+            oninput="syncColor('cta-heading-color','cta-heading-color-text')">
+          <input type="text" id="cta-heading-color-text" value="#00649A"
+            oninput="syncColorText('cta-heading-color-text','cta-heading-color')">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>背景色</label>
+      <div class="color-row">
+        <input type="color" id="cta-bg-color" value="#fffde6"
+          oninput="syncColor('cta-bg-color','cta-bg-color-text')">
+        <input type="text" id="cta-bg-color-text" value="#fffde6"
+          oninput="syncColorText('cta-bg-color-text','cta-bg-color')">
+        <input type="checkbox" id="cta-bg-enabled" checked
+          style="width:16px;height:16px;cursor:pointer;flex-shrink:0;">
+        <label for="cta-bg-enabled" style="margin:0;cursor:pointer;font-weight:400;white-space:nowrap;">背景あり</label>
+      </div>
+    </div>
+
+    <button class="generate-btn" onclick="generateCta()">HTML を生成</button>
+
+    <div class="output-area" id="cta-output">
+      <hr class="divider">
+      <div class="output-header">
+        <span>生成された HTML</span>
+        <button class="copy-btn" id="cta-copy-btn" onclick="copyCode('cta-code','cta-copy-btn')">コピー</button>
+      </div>
+      <div class="output-code" id="cta-code"></div>
+    </div>
+  </div>
+  <!-- /CTAボタン -->
 
   <!-- ===================== CSSスニペット ===================== -->
   <div class="section" id="css-snippets">
@@ -648,6 +739,47 @@
 
     document.getElementById('mp4-code').textContent = html;
     const out = document.getElementById('mp4-output');
+    out.classList.add('show');
+    out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ─── CTAボタン ─── */
+  function syncColor(colorId, textId) {
+    document.getElementById(textId).value = document.getElementById(colorId).value;
+  }
+
+  function syncColorText(textId, colorId) {
+    const val = document.getElementById(textId).value;
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      document.getElementById(colorId).value = val;
+    }
+  }
+
+  function generateCta() {
+    const btnText   = document.getElementById('cta-btn-text').value.trim();
+    const url       = document.getElementById('cta-url').value.trim();
+    if (!btnText) { alert('ボタンテキストを入力してください'); return; }
+    if (!url)     { alert('リンク先 URL を入力してください'); return; }
+
+    const heading      = document.getElementById('cta-heading').value.trim();
+    const btnColor     = document.getElementById('cta-btn-color').value;
+    const headingColor = document.getElementById('cta-heading-color').value;
+    const bgEnabled    = document.getElementById('cta-bg-enabled').checked;
+    const bgColor      = document.getElementById('cta-bg-color').value;
+
+    const bgStyle = bgEnabled ? ` background-color:${bgColor};` : '';
+    const bgClass = bgEnabled ? ' has-background' : '';
+    const headingHtml = heading
+      ? `\n<p style="font-weight:700; font-size:18px; color:${headingColor}; margin:0;">${heading}</p>`
+      : '';
+
+    const html =
+`<div class="wp-block-group${bgClass}" style="${bgStyle} border-radius:1rem; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:2rem 1rem; margin-block:1rem; gap:1.25rem;">${headingHtml}
+<a href="${escapeAttr(url)}" style="display:inline-flex; font-weight:700; color:#ffffff; background-color:${btnColor}; border-radius:100rem; padding:1.5rem 4rem; text-decoration:none; line-height:1;">${btnText}</a>
+</div>`;
+
+    document.getElementById('cta-code').textContent = html;
+    const out = document.getElementById('cta-output');
     out.classList.add('show');
     out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
