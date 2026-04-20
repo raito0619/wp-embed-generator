@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ストマガ 広告パラメーター生成ツール</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Helvetica Neue', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 640px; margin: 0 auto; }
+
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    letter-spacing: -0.01em;
+  }
+  h1 span {
+    font-size: 12px;
+    font-weight: 400;
+    color: #888;
+    margin-left: 8px;
+    letter-spacing: 0;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e8e6e0;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .field-group { margin-bottom: 1.25rem; }
+  .field-group:last-child { margin-bottom: 0; }
+
+  input[type="text"] {
+    width: 100%;
+    font-size: 14px;
+    font-family: inherit;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e0ddd8;
+    background: #faf9f7;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="text"]:focus { border-color: #aaa; background: #fff; }
+  input[type="text"]::placeholder { color: #bbb; }
+
+  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid #e0ddd8;
+    background: #faf9f7;
+    color: #555;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.1s;
+  }
+  .chip:hover { border-color: #bbb; color: #1a1a1a; }
+  .chip.active {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #e8e6e0;
+    margin: 1.5rem 0;
+  }
+
+  .output-section { background: #f5f4f0; border-radius: 10px; padding: 1.25rem; }
+  .output-block { margin-bottom: 1rem; }
+  .output-block:last-child { margin-bottom: 0; }
+  .output-key { font-size: 11px; color: #888; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 5px; }
+
+  .output-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #e8e6e0;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .output-val {
+    font-family: 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    color: #1a1a1a;
+    flex: 1;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+  .url-key { color: #2563eb; }
+  .url-sep { color: #999; }
+  .url-val { color: #1a1a1a; }
+  .url-base { color: #999; }
+
+  .copy-btn {
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #e0ddd8;
+    background: #faf9f7;
+    color: #555;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.1s;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { border-color: #bbb; color: #1a1a1a; }
+  .copy-btn.copied { border-color: #22c55e; color: #16a34a; background: #f0fdf4; }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #bbb;
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>広告パラメーター生成ツール <span>ストリーマーマガジン</span></h1>
+
+  <div class="card">
+
+    <div class="field-group">
+      <div class="section-label">遷移先URL</div>
+      <input type="text" id="dest-url" placeholder="https://gamers.lolipop.jp/" value="https://gamers.lolipop.jp/" />
+    </div>
+
+    <div class="field-group">
+      <div class="section-label">広告主</div>
+      <input type="text" id="advertiser-input" placeholder="例: elgato / yamaha / usaneko" value="elgato" oninput="onAdvertiserInput()" />
+      <div class="chip-group" style="margin-top: 8px;" id="chips-advertiser">
+        <div class="chip active" data-val="elgato">Elgato</div>
+        <div class="chip" data-val="yamaha">YAMAHA</div>
+        <div class="chip" data-val="usaneko">うさねこ</div>
+        <div class="chip" data-val="suzuri">SUZURI</div>
+        <div class="chip" data-val="gamers">Gamers</div>
+        <div class="chip" data-val="alivestudio">Alive Studio</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-label">掲載場所</div>
+      <div class="chip-group" id="chips-place">
+        <div class="chip active" data-val="firstview">ファーストビュー</div>
+        <div class="chip" data-val="header">ヘッダー下</div>
+        <div class="chip" data-val="article_mid">記事中</div>
+        <div class="chip" data-val="article_btm">記事下</div>
+        <div class="chip" data-val="sidebar">サイドバー</div>
+        <div class="chip" data-val="infeed">インフィード</div>
+        <div class="chip" data-val="anchor">アンカー</div>
+        <div class="chip" data-val="footer">フッター</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-label">デバイス</div>
+      <div class="chip-group" id="chips-device">
+        <div class="chip active" data-val="pc">PC</div>
+        <div class="chip" data-val="sp">SP</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-label">サイズ</div>
+      <div class="chip-group" id="chips-size">
+        <div class="chip active" data-val="300x250">300×250</div>
+        <div class="chip" data-val="728x90">728×90</div>
+        <div class="chip" data-val="970x90">970×90</div>
+        <div class="chip" data-val="970x250">970×250</div>
+        <div class="chip" data-val="300x600">300×600</div>
+        <div class="chip" data-val="336x280">336×280</div>
+        <div class="chip" data-val="160x600">160×600</div>
+        <div class="chip" data-val="320x50">320×50</div>
+        <div class="chip" data-val="320x100">320×100</div>
+        <div class="chip" data-val="1200x628">1200×628</div>
+        <div class="chip" data-val="1080x1080">1080×1080</div>
+        <div class="chip" data-val="300x300">300×300</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="section-label">掲載年月</div>
+      <input type="text" id="month-input" placeholder="例: 202505" maxlength="6" oninput="render()" />
+      <div class="chip-group" style="margin-top: 8px;" id="chips-month"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="output-section">
+      <div class="output-block">
+        <div class="output-key">スロット名</div>
+        <div class="output-row">
+          <div class="output-val" id="out-slot">—</div>
+          <button class="copy-btn" onclick="copyVal('out-slot', this)">コピー</button>
+        </div>
+      </div>
+      <div class="output-block">
+        <div class="output-key">UTMパラメーター付きURL</div>
+        <div class="output-row">
+          <div class="output-val" id="out-url-pretty">—</div>
+          <button class="copy-btn" onclick="copyRaw(this)">URLをコピー</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>ストリーマーマガジン 広告パラメーター生成ツール</footer>
+</div>
+
+<script>
+  const state = {
+    advertiser: 'elgato',
+    place: 'firstview',
+    device: 'pc',
+    size: '300x250',
+    month: ''
+  };
+
+  let rawUrl = '';
+
+  function initMonthChips() {
+    const el = document.getElementById('chips-month');
+    const now = new Date();
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const val = y + m;
+      const chip = document.createElement('div');
+      chip.className = 'chip' + (i === 0 ? ' active' : '');
+      chip.dataset.val = val;
+      chip.textContent = y + '/' + m;
+      chip.onclick = function() {
+        el.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        state.month = val;
+        document.getElementById('month-input').value = val;
+        render();
+      };
+      el.appendChild(chip);
+    }
+    const defaultMonth = String(now.getFullYear()) + String(now.getMonth() + 1).padStart(2, '0');
+    state.month = defaultMonth;
+    document.getElementById('month-input').value = defaultMonth;
+  }
+
+  function bindChips(groupId, key) {
+    document.getElementById(groupId).addEventListener('click', function(e) {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      this.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state[key] = chip.dataset.val;
+      if (key === 'advertiser') {
+        document.getElementById('advertiser-input').value = chip.dataset.val;
+      }
+      render();
+    });
+  }
+
+  function onAdvertiserInput() {
+    const val = document.getElementById('advertiser-input').value.trim().toLowerCase().replace(/\s+/g, '_');
+    state.advertiser = val;
+    document.getElementById('chips-advertiser').querySelectorAll('.chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.val === val);
+    });
+    render();
+  }
+
+  function render() {
+    const month = document.getElementById('month-input').value.trim() || state.month;
+    state.month = month;
+
+    const slot = 'stomaga_' + (state.advertiser || '?') + '_' + state.place + '_' + state.device + '_' + state.size;
+    document.getElementById('out-slot').textContent = slot;
+
+    const base = (document.getElementById('dest-url').value.trim().replace(/\/+$/, '') || 'https://example.com') + '/';
+    const src = state.place + '_' + state.size;
+    const campaign = (state.advertiser || '?') + '_' + (month || 'YYYYMM');
+    rawUrl = base + '?utm_source=' + src + '&utm_medium=stmag&utm_campaign=' + campaign;
+
+    document.getElementById('out-url-pretty').innerHTML =
+      '<span class="url-base">' + escHtml(base) + '</span>' +
+      '<span class="url-sep">?</span>' +
+      '<span class="url-key">utm_source</span><span class="url-sep">=</span><span class="url-val">' + escHtml(src) + '</span>' +
+      '<span class="url-sep">&amp;</span>' +
+      '<span class="url-key">utm_medium</span><span class="url-sep">=</span><span class="url-val">stmag</span>' +
+      '<span class="url-sep">&amp;</span>' +
+      '<span class="url-key">utm_campaign</span><span class="url-sep">=</span><span class="url-val">' + escHtml(campaign) + '</span>';
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function copyVal(id, btn) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'コピー済み';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+    });
+  }
+
+  function copyRaw(btn) {
+    navigator.clipboard.writeText(rawUrl).then(() => {
+      btn.textContent = 'コピー済み';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'URLをコピー'; btn.classList.remove('copied'); }, 1500);
+    });
+  }
+
+  initMonthChips();
+  bindChips('chips-advertiser', 'advertiser');
+  bindChips('chips-place', 'place');
+  bindChips('chips-device', 'device');
+  bindChips('chips-size', 'size');
+  document.getElementById('dest-url').addEventListener('input', render);
+  render();
+</script>
+</body>
+</html>
