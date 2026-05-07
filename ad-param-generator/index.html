@@ -168,14 +168,13 @@
     <div class="field-group">
       <div class="section-label">掲載場所</div>
       <div class="chip-group" id="chips-place">
-        <div class="chip active" data-val="firstview">ファーストビュー</div>
-        <div class="chip" data-val="header">ヘッダー下</div>
-        <div class="chip" data-val="article_mid">記事中</div>
-        <div class="chip" data-val="article_btm">記事下</div>
-        <div class="chip" data-val="sidebar">サイドバー</div>
-        <div class="chip" data-val="infeed">インフィード</div>
-        <div class="chip" data-val="anchor">アンカー</div>
-        <div class="chip" data-val="footer">フッター</div>
+        <div class="chip active" data-val="billboard">Billboard Banner</div>
+        <div class="chip" data-val="thin_banner">Thin Banner</div>
+        <div class="chip" data-val="half_page">Half Page Ad</div>
+        <div class="chip" data-val="medium_rect">Medium Rectangle</div>
+        <div class="chip" data-val="anchor">Anchor Ad</div>
+        <div class="chip" data-val="popup">Popup Ad</div>
+        <div class="chip" data-val="footer">Footer</div>
       </div>
     </div>
 
@@ -206,8 +205,8 @@
     </div>
 
     <div class="field-group">
-      <div class="section-label">掲載年月</div>
-      <input type="text" id="month-input" placeholder="例: 202505" maxlength="6" oninput="render()" />
+      <div class="section-label">掲載開始日</div>
+      <input type="text" id="month-input" placeholder="例: 20260511" maxlength="8" oninput="render()" />
       <div class="chip-group" style="margin-top: 8px;" id="chips-month"></div>
     </div>
 
@@ -238,7 +237,7 @@
 <script>
   const state = {
     advertiser: 'elgato',
-    place: 'firstview',
+    place: 'billboard',
     device: 'pc',
     size: '300x250',
     month: ''
@@ -250,14 +249,15 @@
     const el = document.getElementById('chips-month');
     const now = new Date();
     for (let i = 0; i < 5; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (i * 7));
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
-      const val = y + m;
+      const dd = String(d.getDate()).padStart(2, '0');
+      const val = y + m + dd;
       const chip = document.createElement('div');
       chip.className = 'chip' + (i === 0 ? ' active' : '');
       chip.dataset.val = val;
-      chip.textContent = y + '/' + m;
+      chip.textContent = y + '/' + m + '/' + dd;
       chip.onclick = function() {
         el.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
@@ -267,9 +267,10 @@
       };
       el.appendChild(chip);
     }
-    const defaultMonth = String(now.getFullYear()) + String(now.getMonth() + 1).padStart(2, '0');
-    state.month = defaultMonth;
-    document.getElementById('month-input').value = defaultMonth;
+    const now2 = new Date();
+    const defaultDate = String(now2.getFullYear()) + String(now2.getMonth() + 1).padStart(2, '0') + String(now2.getDate()).padStart(2, '0');
+    state.month = defaultDate;
+    document.getElementById('month-input').value = defaultDate;
   }
 
   function bindChips(groupId, key) {
@@ -303,8 +304,8 @@
     document.getElementById('out-slot').textContent = slot;
 
     const base = (document.getElementById('dest-url').value.trim().replace(/\/+$/, '') || 'https://example.com') + '/';
-    const src = state.place + '_' + state.size;
-    const campaign = (state.advertiser || '?') + '_' + (month || 'YYYYMM');
+    const src = state.place + '_' + state.device + '_' + state.size;
+    const campaign = (state.advertiser || '?') + '_' + (month || 'YYYYMMDD');
     rawUrl = base + '?utm_source=' + src + '&utm_medium=stmag&utm_campaign=' + campaign;
 
     document.getElementById('out-url-pretty').innerHTML =
