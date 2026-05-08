@@ -149,7 +149,7 @@
 
     <div class="field-group">
       <div class="section-label">遷移先URL</div>
-      <input type="text" id="dest-url" placeholder="https://gamers.lolipop.jp/" value="https://gamers.lolipop.jp/" />
+      <input type="text" id="dest-url" placeholder="https://gamers.lolipop.jp/" />
     </div>
 
     <div class="field-group">
@@ -182,7 +182,7 @@
       <div class="section-label">デバイス</div>
       <div class="chip-group" id="chips-device">
         <div class="chip active" data-val="pc">PC</div>
-        <div class="chip" data-val="sp">SP</div>
+        <div class="chip active" data-val="sp">SP</div>
       </div>
     </div>
 
@@ -238,7 +238,7 @@
   const state = {
     advertiser: 'elgato',
     place: 'billboard',
-    device: 'pc',
+    device: ['pc', 'sp'],
     size: '300x250',
     month: ''
   };
@@ -287,6 +287,25 @@
     });
   }
 
+  function bindMultiChips(groupId, key) {
+    document.getElementById(groupId).addEventListener('click', function(e) {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      const val = chip.dataset.val;
+      const idx = state[key].indexOf(val);
+      if (idx >= 0) {
+        if (state[key].length > 1) {
+          state[key].splice(idx, 1);
+          chip.classList.remove('active');
+        }
+      } else {
+        state[key].push(val);
+        chip.classList.add('active');
+      }
+      render();
+    });
+  }
+
   function onAdvertiserInput() {
     const val = document.getElementById('advertiser-input').value.trim().toLowerCase().replace(/\s+/g, '_');
     state.advertiser = val;
@@ -300,11 +319,12 @@
     const month = document.getElementById('month-input').value.trim() || state.month;
     state.month = month;
 
-    const slot = 'stomaga_' + (state.advertiser || '?') + '_' + state.place + '_' + state.device + '_' + state.size;
+    const deviceStr = state.device.slice().sort().join('_');
+    const slot = 'stomaga_' + (state.advertiser || '?') + '_' + state.place + '_' + deviceStr + '_' + state.size;
     document.getElementById('out-slot').textContent = slot;
 
     const base = (document.getElementById('dest-url').value.trim().replace(/\/+$/, '') || 'https://example.com') + '/';
-    const src = state.place + '_' + state.device + '_' + state.size;
+    const src = state.place + '_' + deviceStr + '_' + state.size;
     const campaign = (state.advertiser || '?') + '_' + (month || 'YYYYMMDD');
     rawUrl = base + '?utm_source=' + src + '&utm_medium=stmag&utm_campaign=' + campaign;
 
@@ -342,7 +362,7 @@
   initMonthChips();
   bindChips('chips-advertiser', 'advertiser');
   bindChips('chips-place', 'place');
-  bindChips('chips-device', 'device');
+  bindMultiChips('chips-device', 'device');
   bindChips('chips-size', 'size');
   document.getElementById('dest-url').addEventListener('input', render);
   render();
