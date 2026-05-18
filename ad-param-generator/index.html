@@ -149,14 +149,14 @@
 
     <div class="field-group">
       <div class="section-label">遷移先URL</div>
-      <input type="text" id="dest-url" placeholder="https://gamers.lolipop.jp/" value="https://gamers.lolipop.jp/" />
+      <input type="text" id="dest-url" placeholder="https://example.com/" value="" />
     </div>
 
     <div class="field-group">
       <div class="section-label">広告主</div>
-      <input type="text" id="advertiser-input" placeholder="例: elgato / yamaha / usaneko" value="elgato" oninput="onAdvertiserInput()" />
+      <input type="text" id="advertiser-input" placeholder="例: elgato / yamaha / usaneko" value="" oninput="onAdvertiserInput()" />
       <div class="chip-group" style="margin-top: 8px;" id="chips-advertiser">
-        <div class="chip active" data-val="elgato">Elgato</div>
+        <div class="chip" data-val="elgato">Elgato</div>
         <div class="chip" data-val="yamaha">YAMAHA</div>
         <div class="chip" data-val="usaneko">うさねこ</div>
         <div class="chip" data-val="suzuri">SUZURI</div>
@@ -174,7 +174,6 @@
         <div class="chip" data-val="medium_rect">Medium Rectangle</div>
         <div class="chip" data-val="anchor">Anchor Ad</div>
         <div class="chip" data-val="popup">Popup Ad</div>
-        <div class="chip" data-val="footer">Footer</div>
       </div>
     </div>
 
@@ -191,15 +190,10 @@
       <div class="chip-group" id="chips-size">
         <div class="chip active" data-val="300x250">300×250</div>
         <div class="chip" data-val="728x90">728×90</div>
-        <div class="chip" data-val="970x90">970×90</div>
         <div class="chip" data-val="970x250">970×250</div>
         <div class="chip" data-val="300x600">300×600</div>
-        <div class="chip" data-val="336x280">336×280</div>
-        <div class="chip" data-val="160x600">160×600</div>
         <div class="chip" data-val="320x50">320×50</div>
-        <div class="chip" data-val="320x100">320×100</div>
-        <div class="chip" data-val="1200x628">1200×628</div>
-        <div class="chip" data-val="1080x1080">1080×1080</div>
+        <div class="chip" data-val="1280x720">1280×720</div>
         <div class="chip" data-val="300x300">300×300</div>
       </div>
     </div>
@@ -236,7 +230,7 @@
 
 <script>
   const state = {
-    advertiser: 'elgato',
+    advertiser: '',
     place: 'billboard',
     device: 'pc',
     size: '300x250',
@@ -283,6 +277,7 @@
       if (key === 'advertiser') {
         document.getElementById('advertiser-input').value = chip.dataset.val;
       }
+      if (key === 'place' || key === 'device') applyRecommendedSize();
       render();
     });
   }
@@ -294,6 +289,24 @@
       c.classList.toggle('active', c.dataset.val === val);
     });
     render();
+  }
+
+  const recommendedSize = {
+    'billboard_pc': '970x250',
+    'thin_banner_pc': '728x90', 'thin_banner_sp': '320x50',
+    'half_page_pc': '300x600',
+    'medium_rect_pc': '300x250', 'medium_rect_sp': '300x250',
+    'anchor_pc': '728x90', 'anchor_sp': '320x50',
+    'popup_pc': '300x250', 'popup_sp': '300x250',
+  };
+
+  function applyRecommendedSize() {
+    const rec = recommendedSize[state.place + '_' + state.device];
+    if (!rec) return;
+    state.size = rec;
+    document.getElementById('chips-size').querySelectorAll('.chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.val === rec);
+    });
   }
 
   function render() {
