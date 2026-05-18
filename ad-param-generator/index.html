@@ -83,18 +83,6 @@
     color: #fff;
     font-weight: 500;
   }
-  .chip.disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  .hint {
-    font-size: 11px;
-    color: #999;
-    margin-top: 6px;
-    line-height: 1.4;
-  }
 
   .divider {
     border: none;
@@ -161,7 +149,7 @@
 
     <div class="field-group">
       <div class="section-label">遷移先URL</div>
-      <input type="text" id="dest-url" placeholder="https://gamers.lolipop.jp/" />
+      <input type="text" id="dest-url" placeholder="https://gamers.lolipop.jp/" value="https://gamers.lolipop.jp/" />
     </div>
 
     <div class="field-group">
@@ -186,6 +174,7 @@
         <div class="chip" data-val="medium_rect">Medium Rectangle</div>
         <div class="chip" data-val="anchor">Anchor Ad</div>
         <div class="chip" data-val="popup">Popup Ad</div>
+        <div class="chip" data-val="footer">Footer</div>
       </div>
     </div>
 
@@ -200,16 +189,19 @@
     <div class="field-group">
       <div class="section-label">サイズ</div>
       <div class="chip-group" id="chips-size">
-        <div class="chip" data-val="300x250">300×250</div>
+        <div class="chip active" data-val="300x250">300×250</div>
         <div class="chip" data-val="728x90">728×90</div>
-        <div class="chip active" data-val="970x250">970×250</div>
+        <div class="chip" data-val="970x90">970×90</div>
+        <div class="chip" data-val="970x250">970×250</div>
         <div class="chip" data-val="300x600">300×600</div>
+        <div class="chip" data-val="336x280">336×280</div>
+        <div class="chip" data-val="160x600">160×600</div>
         <div class="chip" data-val="320x50">320×50</div>
-        <div class="chip" data-val="728x100">728×100</div>
-        <div class="chip" data-val="1280x720">1280×720</div>
+        <div class="chip" data-val="320x100">320×100</div>
+        <div class="chip" data-val="1200x628">1200×628</div>
+        <div class="chip" data-val="1080x1080">1080×1080</div>
         <div class="chip" data-val="300x300">300×300</div>
       </div>
-      <div class="hint" id="size-hint"></div>
     </div>
 
     <div class="field-group">
@@ -247,48 +239,9 @@
     advertiser: 'elgato',
     place: 'billboard',
     device: 'pc',
-    size: '970x250',
+    size: '300x250',
     month: ''
   };
-
-  const VALID_COMBINATIONS = {
-    billboard:   { pc: ['970x250'] },
-    thin_banner: { pc: ['728x90'],   sp: ['320x50'] },
-    half_page:   { pc: ['300x600'] },
-    medium_rect: { pc: ['300x250'],  sp: ['300x250'] },
-    anchor:      { pc: ['728x100'],  sp: ['320x50'] },
-    popup:       { pc: ['1280x720'], sp: ['300x300'] }
-  };
-
-  function validDevicesFor(place) {
-    return Object.keys(VALID_COMBINATIONS[place] || {});
-  }
-  function validSizesFor(place, device) {
-    return (VALID_COMBINATIONS[place] && VALID_COMBINATIONS[place][device]) || [];
-  }
-
-  function applyConstraints() {
-    const devs = validDevicesFor(state.place);
-    if (devs.length && !devs.includes(state.device)) state.device = devs[0];
-    document.querySelectorAll('#chips-device .chip').forEach(c => {
-      const ok = devs.includes(c.dataset.val);
-      c.classList.toggle('disabled', !ok);
-      c.classList.toggle('active', ok && c.dataset.val === state.device);
-    });
-
-    const sizes = validSizesFor(state.place, state.device);
-    if (sizes.length && !sizes.includes(state.size)) state.size = sizes[0];
-    document.querySelectorAll('#chips-size .chip').forEach(c => {
-      const ok = sizes.includes(c.dataset.val);
-      c.classList.toggle('disabled', !ok);
-      c.classList.toggle('active', ok && c.dataset.val === state.size);
-    });
-
-    const hint = document.getElementById('size-hint');
-    if (hint) hint.textContent = sizes.length
-      ? '推奨サイズ: ' + sizes.join(', ')
-      : 'この組み合わせには利用可能なサイズがありません';
-  }
 
   let rawUrl = '';
 
@@ -323,14 +276,13 @@
   function bindChips(groupId, key) {
     document.getElementById(groupId).addEventListener('click', function(e) {
       const chip = e.target.closest('.chip');
-      if (!chip || chip.classList.contains('disabled')) return;
+      if (!chip) return;
       this.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       state[key] = chip.dataset.val;
       if (key === 'advertiser') {
         document.getElementById('advertiser-input').value = chip.dataset.val;
       }
-      applyConstraints();
       render();
     });
   }
@@ -393,7 +345,6 @@
   bindChips('chips-device', 'device');
   bindChips('chips-size', 'size');
   document.getElementById('dest-url').addEventListener('input', render);
-  applyConstraints();
   render();
 </script>
 </body>
